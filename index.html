@@ -1,0 +1,2809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Z BOUND</title>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y3EP73QPN1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-Y3EP73QPN1');
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&display=swap');
+
+        :root {
+            --bg-dark: #030305;
+            --canvas-bg: #07070a;
+            --panel-bg: rgba(12, 12, 16, 0.94);
+            --border-color: #333340;
+            --text-main: #E2E8F0;
+            --text-muted: #8892B0;
+            --accent-gold: #FFD700;
+            --accent-gold-glow: rgba(255, 215, 0, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            height: 100dvh;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg-dark);
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            background: var(--canvas-bg);
+            box-shadow: 0 0 35px rgba(0, 0, 0, 0.8);
+            max-width: 100vw;
+            max-height: 100vh;
+            max-height: 100dvh;
+            object-fit: contain;
+        }
+
+        .ui-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            height: 100dvh;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(3, 3, 5, 0.94);
+            z-index: 10;
+            padding: clamp(8px, 2vh, 20px) clamp(10px, 3vw, 24px);
+            text-align: center;
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+
+        .ui-screen.active {
+            display: flex;
+        }
+
+        h1.title {
+            font-size: clamp(1.8rem, 6vmax, 3.8rem);
+            font-weight: 800;
+            letter-spacing: clamp(0.1em, 1vw, 0.28em);
+            color: #FFFFFF;
+            text-transform: uppercase;
+            margin-bottom: clamp(2px, 0.5vh, 6px);
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.35);
+            line-height: 1.1;
+        }
+
+        h2.title {
+            font-size: clamp(1.3rem, 4vmax, 2.2rem) !important;
+            font-weight: 700;
+            letter-spacing: clamp(0.08em, 0.8vw, 0.2em);
+            color: #FFFFFF;
+            text-transform: uppercase;
+            margin-bottom: clamp(2px, 0.5vh, 6px);
+            line-height: 1.1;
+        }
+
+        .subtitle {
+            font-size: clamp(0.7rem, 2vh, 0.95rem);
+            font-weight: 600;
+            letter-spacing: clamp(0.1em, 0.5vw, 0.25em);
+            color: var(--text-muted);
+            margin-bottom: clamp(12px, 3vh, 26px);
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35em;
+            flex-wrap: wrap;
+        }
+
+        .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(6px, 1.4vh, 12px);
+            width: min(100%, 300px);
+            flex-shrink: 0;
+        }
+
+        .btn {
+            background: #121218;
+            color: var(--text-main);
+            border: 1px solid #444455;
+            padding: clamp(8px, 1.5vh, 13px) clamp(14px, 2vw, 22px);
+            font-size: clamp(0.8rem, 2vh, 1.05rem);
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            outline: none;
+            border-radius: 4px;
+            font-family: 'Space Grotesk', sans-serif;
+            touch-action: manipulation;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .btn:hover, .btn:focus {
+            background: #FFFFFF;
+            color: #000000;
+            border-color: #FFFFFF;
+            box-shadow: 0 0 14px rgba(255, 255, 255, 0.45);
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #B8860B, #FFD700);
+            color: #000000;
+            border: 1px solid #FFE57F;
+            font-weight: 800;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-gold:hover {
+            background: #FFFFFF;
+            color: #000;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
+        }
+
+        /* Level Grid */
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(clamp(36px, 7.5vw, 52px), 1fr));
+            gap: clamp(4px, 0.8vw, 8px);
+            width: min(100%, 720px);
+            max-height: min(50vh, 340px);
+            overflow-y: auto;
+            padding: clamp(8px, 1.5vh, 14px);
+            background: #08080C;
+            border: 1px solid #222230;
+            margin-bottom: clamp(10px, 2vh, 18px);
+            scrollbar-width: thin;
+            scrollbar-color: #445 #111;
+            border-radius: 6px;
+        }
+
+        .level-btn {
+            aspect-ratio: 1;
+            background: #111118;
+            border: 1px solid #333345;
+            color: #888899;
+            font-size: clamp(0.65rem, 1.6vh, 0.9rem);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.12s ease;
+            position: relative;
+            font-family: 'Space Grotesk', sans-serif;
+            border-radius: 3px;
+        }
+
+        .level-btn.locked {
+            opacity: 0.25;
+            cursor: not-allowed;
+            background: #050508;
+        }
+
+        .level-btn.completed {
+            border-color: #44AA55;
+            color: #44FF77;
+        }
+
+        .level-btn.final-level {
+            background: linear-gradient(135deg, #443000, #AA8800);
+            border-color: #FFD700;
+            color: #FFF;
+        }
+
+        .level-btn:not(.locked):hover {
+            background: #FFFFFF;
+            color: #000000;
+        }
+
+        /* HUD Overlay */
+        #hud {
+            position: absolute;
+            top: clamp(8px, 2vh, 16px);
+            left: clamp(10px, 2vw, 20px);
+            right: clamp(10px, 2vw, 20px);
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+            z-index: 5;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: #EEEEEE;
+            font-size: clamp(0.7rem, 2vh, 0.95rem);
+        }
+
+        #hud .hud-btn-group {
+            display: flex;
+            gap: 8px;
+            pointer-events: auto;
+        }
+
+        #hud .hud-btn {
+            pointer-events: auto;
+            background: rgba(10, 10, 16, 0.85);
+            border: 1px solid #555566;
+            color: #FFFFFF;
+            padding: clamp(4px, 1vh, 8px) clamp(8px, 1.4vw, 14px);
+            cursor: pointer;
+            font-size: clamp(0.65rem, 1.6vh, 0.85rem);
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+            border-radius: 3px;
+            transition: all 0.15s ease;
+        }
+
+        #hud .hud-btn:hover {
+            background: #FFFFFF;
+            color: #000000;
+        }
+
+        /* Custom Touch Controls Overlay */
+        #mobile-controls {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 8;
+            display: none;
+        }
+
+        .touch-btn-wrapper {
+            position: absolute;
+            pointer-events: auto;
+            touch-action: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .touch-btn {
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.14);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FFFFFF;
+            font-size: clamp(1rem, 2.8vh, 1.5rem);
+            font-weight: 800;
+            user-select: none;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            transition: background 0.1s ease, border-color 0.1s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .touch-btn:active, .touch-btn.active {
+            background: rgba(255, 255, 255, 0.45);
+            border-color: #FFFFFF;
+        }
+
+        /* Customizing Controls Editing Bar */
+        #layout-editor-bar {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            display: none;
+            gap: 10px;
+            background: rgba(5, 5, 10, 0.92);
+            padding: 8px 16px;
+            border: 1px solid #555;
+            border-radius: 6px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            align-items: center;
+        }
+
+        /* Settings Panel */
+        .panel-box {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: clamp(12px, 2.2vh, 20px);
+            width: min(100%, 520px);
+            text-align: left;
+            margin-bottom: clamp(10px, 2vh, 18px);
+            max-height: min(46vh, 320px);
+            overflow-y: auto;
+            line-height: 1.5;
+            font-size: clamp(0.75rem, 1.8vh, 0.9rem);
+            color: #CCC;
+            scrollbar-width: thin;
+            scrollbar-color: #445 #111;
+            border-radius: 6px;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: clamp(6px, 1vh, 10px) 0;
+            border-bottom: 1px solid #222230;
+        }
+
+        /* Developer Section */
+        .dev-section {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px dashed #444455;
+            text-align: center;
+            font-size: clamp(0.75rem, 1.6vh, 0.85rem);
+            color: #888;
+            letter-spacing: 0.1em;
+        }
+
+        .dev-handle {
+            color: #FFFFFF;
+            font-weight: 700;
+            margin-top: 3px;
+            letter-spacing: 0.12em;
+            font-family: 'Space Grotesk', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.15s ease;
+            position: relative;
+            z-index: 20;
+        }
+
+        .dev-handle:hover {
+            color: #AAA;
+            text-decoration: underline;
+        }
+
+        /* Final Golden Reward Frame */
+        .golden-frame-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(145deg, #1A1500, #0A0800);
+            border: 4px solid #FFD700;
+            box-shadow: 0 0 35px rgba(255, 215, 0, 0.6), inset 0 0 20px rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            padding: clamp(12px, 2vh, 20px);
+            max-width: min(92vw, 560px);
+            max-height: 75vh;
+            position: relative;
+            overflow: hidden;
+            animation: goldGlow 2.5s infinite alternate;
+        }
+
+        @keyframes goldGlow {
+            0% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.4), inset 0 0 15px rgba(255, 215, 0, 0.2); }
+            100% { box-shadow: 0 0 45px rgba(255, 215, 0, 0.8), inset 0 0 30px rgba(255, 215, 0, 0.5); }
+        }
+
+        .final-reward-image {
+            max-width: 100%;
+            max-height: min(40vh, 260px);
+            object-fit: contain;
+            border: 2px solid #FFE57F;
+            border-radius: 6px;
+            margin: 10px 0;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- HUD -->
+        <div id="hud">
+            <div id="hud-level">LEVEL 001</div>
+            <div id="hud-attempts">ATTEMPTS: 1</div>
+            <div class="hud-btn-group">
+                <button class="hud-btn" id="hud-hint-btn">HINT</button>
+                <button class="hud-btn" id="hud-reset-btn">RESET LEVEL [R]</button>
+                <button class="hud-btn" id="hud-pause-btn">PAUSE [ESC]</button>
+            </div>
+        </div>
+
+        <!-- Custom Touch Layout Screen Editor Bar -->
+        <div id="layout-editor-bar">
+            <span style="color: #FFD700; font-size: 0.85rem; font-weight: bold;">DRAG & RESIZE CONTROLS</span>
+            <button class="btn" id="btn-layout-reset" style="padding: 4px 10px; font-size: 0.75rem;">RESET LAYOUT</button>
+            <button class="btn btn-gold" id="btn-layout-save" style="padding: 4px 10px; font-size: 0.75rem;">SAVE LAYOUT</button>
+        </div>
+
+        <!-- Interactive Custom Touch Controls Container -->
+        <div id="mobile-controls">
+            <div class="touch-btn-wrapper" id="wrap-btn-left">
+                <div class="touch-btn" id="btn-left">◄</div>
+            </div>
+            <div class="touch-btn-wrapper" id="wrap-btn-right">
+                <div class="touch-btn" id="btn-right">►</div>
+            </div>
+            <div class="touch-btn-wrapper" id="wrap-btn-jump">
+                <div class="touch-btn" id="btn-jump">▲</div>
+            </div>
+        </div>
+
+        <!-- Startup Screen -->
+        <div id="screen-boot" class="ui-screen active" style="background: #000;">
+            <h1 class="title" id="boot-title" style="opacity: 0; transition: opacity 1.2s ease;">Z BOUND</h1>
+            <div class="subtitle" id="boot-sub" style="opacity: 0; transition: opacity 1.2s ease; margin-bottom: 0;">
+                MADE BY SAM
+            </div>
+        </div>
+
+        <!-- Main Menu -->
+        <div id="screen-menu" class="ui-screen">
+            <h1 class="title">Z BOUND</h1>
+            <div class="subtitle">
+                MADE BY SAM
+            </div>
+            <div class="btn-container">
+                <button class="btn" id="btn-play">PLAY</button>
+                <button class="btn" id="btn-levels">LEVELS</button>
+                <button class="btn" id="btn-how">HOW TO PLAY</button>
+                <button class="btn" id="btn-settings">SETTINGS</button>
+            </div>
+        </div>
+
+        <!-- Level Select -->
+        <div id="screen-levels" class="ui-screen">
+            <h2 class="title">SELECT LEVEL</h2>
+            <div class="subtitle">CHALLENGES</div>
+            <div class="level-grid" id="level-grid"></div>
+            <div class="btn-container">
+                <button class="btn" id="btn-levels-back">BACK</button>
+            </div>
+        </div>
+
+        <!-- How To Play -->
+        <div id="screen-how" class="ui-screen">
+            <h2 class="title">HOW TO PLAY</h2>
+            <div class="subtitle">RULES & MECHANICS</div>
+            <div class="panel-box">
+                <p><strong>KEYBOARD CONTROLS (PC/LAPTOP):</strong><br>
+                A / D or Left/Right Arrow — Move<br>
+                W / Space / Up Arrow — Jump<br>
+                R — Restart Current Level<br>
+                ESC — Pause Game</p>
+                <br>
+                <p><strong>TOUCH CONTROLS (MOBILE):</strong><br>
+                Use the directional and jump buttons. You can fully customize button positions and sizes under <em>SETTINGS → LAYOUT</em>.</p>
+            </div>
+            <div class="btn-container">
+                <button class="btn" id="btn-how-back">BACK</button>
+            </div>
+        </div>
+
+        <!-- Settings -->
+        <div id="screen-settings" class="ui-screen">
+            <h2 class="title">SETTINGS</h2>
+            <div class="subtitle">GAME CONFIGURATION</div>
+            <div class="panel-box">
+                <div class="setting-row">
+                    <span>CUSTOM TOUCH LAYOUT</span>
+                    <button class="btn" id="btn-open-layout" style="padding: 5px 12px; font-size: 0.8rem;">CUSTOMIZE</button>
+                </div>
+                <div class="setting-row">
+                    <span>RESET CURRENT LEVEL</span>
+                    <button class="btn" id="btn-settings-reset-lvl" style="padding: 5px 12px; font-size: 0.8rem;">RESET LEVEL</button>
+                </div>
+                <div class="setting-row">
+                    <span>SOUND EFFECTS</span>
+                    <button class="btn" id="toggle-sound" style="padding: 5px 12px; font-size: 0.8rem;">ON</button>
+                </div>
+                <div class="setting-row">
+                    <span>SCREEN SHAKE</span>
+                    <button class="btn" id="toggle-shake" style="padding: 5px 12px; font-size: 0.8rem;">ON</button>
+                </div>
+                <div class="setting-row">
+                    <span>FULLSCREEN</span>
+                    <button class="btn" id="toggle-fullscreen" style="padding: 5px 12px; font-size: 0.8rem;">TOGGLE</button>
+                </div>
+
+                <div class="dev-section">
+                    DEVELOPER<br>
+                    <a href="https://www.instagram.com/2o6sam/" target="_blank" rel="noopener noreferrer" class="dev-handle"><svg style="display:inline-block; vertical-align:-2px; width:14px; height:14px; margin-right:4px; fill:currentColor;" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>@2o6sam</a>
+                </div>
+            </div>
+            <div class="btn-container">
+                <button class="btn" id="btn-settings-back">BACK</button>
+            </div>
+        </div>
+
+        <!-- Pause Overlay -->
+        <div id="screen-pause" class="ui-screen">
+            <h2 class="title">PAUSED</h2>
+            <div class="subtitle">PAUSE MENU</div>
+            <div class="btn-container">
+                <button class="btn" id="btn-resume">RESUME</button>
+                <button class="btn" id="btn-restart">RESET LEVEL</button>
+                <button class="btn" id="btn-pause-levels">LEVEL SELECT</button>
+                <button class="btn" id="btn-pause-menu">MAIN MENU</button>
+            </div>
+        </div>
+
+        <!-- Level Complete Overlay (Normal Levels Only) -->
+        <div id="screen-complete" class="ui-screen">
+            <h2 class="title">LEVEL CLEARED</h2>
+            <div class="subtitle" id="complete-stats">ATTEMPTS: 1</div>
+            <div class="btn-container">
+                <button class="btn btn-gold" id="btn-next-level">NEXT LEVEL</button>
+                <button class="btn" id="btn-complete-replay">REPLAY LEVEL</button>
+                <button class="btn" id="btn-complete-levels">LEVEL SELECT</button>
+            </div>
+        </div>
+
+        <!-- Final Golden Victory Overlay (RESERVED SOLELY FOR FINAL LEVEL) -->
+        <div id="screen-final-reward" class="ui-screen">
+            <div class="golden-frame-container">
+                <h2 style="color: #FFD700; font-size: clamp(1.2rem, 3.5vh, 2rem); font-weight: 800; text-shadow: 0 0 10px rgba(255,215,0,0.8);">
+                    GRAND VICTORY!
+                </h2>
+                <div style="font-size: clamp(0.75rem, 1.8vh, 0.95rem); color: #FFE57F; margin-top: 2px;">
+                    YOU CONQUERED ALL LEVELS OF Z BOUND
+                </div>
+
+                <!-- Final Level Reward Photo -->
+                <img id="final-reward-photo" src="20261008_155411_110.jpg" alt="Final Reward Photo" class="final-reward-image" onerror="this.style.display='none'; document.getElementById('photo-fallback').style.display='block';">
+                <div id="photo-fallback" style="display:none; color: #FFD700; font-weight: bold; margin: 15px 0;">[ VICTORY PHOTO ]</div>
+
+                <div style="font-size: clamp(0.7rem, 1.5vh, 0.85rem); color: #BBB; margin-bottom: 12px;">
+                    MADE BY SAM • <a href="https://www.instagram.com/2o6sam/" target="_blank" rel="noopener noreferrer" class="dev-handle" style="color:#FFD700;">@2o6sam</a>
+                </div>
+            </div>
+            <div class="btn-container" style="margin-top: 15px;">
+                <button class="btn btn-gold" id="btn-victory-replay">REPLAY GAME</button>
+                <button class="btn" id="btn-victory-levels">LEVEL SELECT</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            WIDTH: 960,
+            HEIGHT: 500,
+            GRAVITY: 0.46,
+            MAX_FALL_SPEED: 11.5,
+            PLAYER_ACCEL: 0.8,
+            PLAYER_FRICTION: 0.84,
+            MAX_SPEED: 4.4,
+            JUMP_FORCE: -9.8
+        };
+
+        const STATE = {
+            BOOT: 'BOOT',
+            MENU: 'MENU',
+            LEVEL_SELECT: 'LEVEL_SELECT',
+            HOW_TO_PLAY: 'HOW_TO_PLAY',
+            SETTINGS: 'SETTINGS',
+            CUSTOM_LAYOUT: 'CUSTOM_LAYOUT',
+            PLAYING: 'PLAYING',
+            PAUSED: 'PAUSED',
+            LEVEL_COMPLETE: 'LEVEL_COMPLETE',
+            FINAL_REWARD: 'FINAL_REWARD'
+        };
+
+        let currentState = STATE.BOOT;
+        let currentLevelIndex = 0;
+        let levelAttempts = 1;
+        let screenShake = 0;
+        let audioEnabled = true;
+        let shakeEnabled = true;
+
+        // Persistent Player Save Data
+        let saveData = {
+            unlockedLevel: 1,
+            completedLevels: [],
+            bestAttempts: {}
+        };
+
+        // Custom Touch Controls Layout Configuration
+        let touchLayout = {
+            btnLeft: { x: 5, y: 72, size: 58 },
+            btnRight: { x: 16, y: 72, size: 58 },
+            btnJump: { x: 84, y: 70, size: 66 }
+        };
+
+        function loadProgress() {
+            try {
+                const data = localStorage.getItem('ZBOUND_SAVE');
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    saveData = { ...saveData, ...parsed };
+                }
+                const layoutData = localStorage.getItem('ZBOUND_TOUCH_LAYOUT');
+                if (layoutData) {
+                    touchLayout = JSON.parse(layoutData);
+                }
+
+            } catch (e) {
+                console.warn('LocalStorage unavailable');
+            }
+        }
+
+        function saveProgress() {
+            try {
+                localStorage.setItem('ZBOUND_SAVE', JSON.stringify(saveData));
+            } catch (e) {
+                console.warn('LocalStorage save failed');
+            }
+        }
+
+        function saveTouchLayout() {
+            try {
+                localStorage.setItem('ZBOUND_TOUCH_LAYOUT', JSON.stringify(touchLayout));
+            } catch (e) {
+                console.warn('LocalStorage layout save failed');
+            }
+        }
+
+        class AudioEngine {
+            constructor() {
+                this.ctx = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) this.ctx = new AudioCtx();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playTone(freq, type, duration, volStart = 0.2, volEnd = 0.01) {
+                if (!audioEnabled || !this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(volStart, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(volEnd, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch(e) {}
+            }
+
+            playJump() {
+                if (!audioEnabled || !this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(400, this.ctx.currentTime + 0.12);
+                    gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.12);
+                } catch(e) {}
+            }
+
+            playDeath() {
+                if (!audioEnabled || !this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(45, this.ctx.currentTime + 0.22);
+                    gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.22);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.22);
+                } catch(e) {}
+            }
+
+            playWin() {
+                if (!audioEnabled || !this.ctx) return;
+                [261, 329, 392, 523, 659].forEach((f, idx) => {
+                    setTimeout(() => this.playTone(f, 'triangle', 0.16, 0.2, 0.01), idx * 75);
+                });
+            }
+
+            playClick() {
+                this.playTone(620, 'sine', 0.04, 0.1, 0.01);
+            }
+        }
+
+        const audio = new AudioEngine();
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const keys = { left: false, right: false, jump: false };
+
+        function updateCanvasScale() {
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const aspect = CONFIG.WIDTH / CONFIG.HEIGHT;
+
+            let w = windowWidth;
+            let h = windowWidth / aspect;
+
+            if (h > windowHeight) {
+                h = windowHeight;
+                w = windowHeight * aspect;
+            }
+
+            canvas.width = CONFIG.WIDTH;
+            canvas.height = CONFIG.HEIGHT;
+            canvas.style.width = `${Math.floor(w)}px`;
+            canvas.style.height = `${Math.floor(h)}px`;
+
+            applyTouchLayoutDOM();
+        }
+
+        function requestLandscape() {
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(() => {});
+            }
+        }
+
+        window.addEventListener('resize', updateCanvasScale);
+        window.addEventListener('orientationchange', updateCanvasScale);
+
+        window.addEventListener('keydown', (e) => {
+            audio.init();
+            requestLandscape();
+
+            if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') keys.left = true;
+            if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') keys.right = true;
+            if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp' || e.key === ' ') {
+                if (!keys.jump && currentState === STATE.PLAYING) player.jump();
+                keys.jump = true;
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                if (currentState === STATE.PLAYING) restartCurrentLevel();
+            }
+            if (e.key === 'Escape') {
+                if (currentState === STATE.PLAYING) switchState(STATE.PAUSED);
+                else if (currentState === STATE.PAUSED) switchState(STATE.PLAYING);
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') keys.left = false;
+            if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') keys.right = false;
+            if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp' || e.key === ' ') keys.jump = false;
+        });
+
+        function applyTouchLayoutDOM() {
+            const items = [
+                { id: 'wrap-btn-left', data: touchLayout.btnLeft },
+                { id: 'wrap-btn-right', data: touchLayout.btnRight },
+                { id: 'wrap-btn-jump', data: touchLayout.btnJump }
+            ];
+
+            items.forEach(item => {
+                const el = document.getElementById(item.id);
+                if (el && item.data) {
+                    el.style.left = `${item.data.x}%`;
+                    el.style.top = `${item.data.y}%`;
+                    el.style.width = `${item.data.size}px`;
+                    el.style.height = `${item.data.size}px`;
+                }
+            });
+        }
+
+        function setupCustomLayoutDragSystem() {
+            const items = [
+                { wrapId: 'wrap-btn-left', key: 'btnLeft' },
+                { wrapId: 'wrap-btn-right', key: 'btnRight' },
+                { wrapId: 'wrap-btn-jump', key: 'btnJump' }
+            ];
+
+            items.forEach(item => {
+                const wrap = document.getElementById(item.wrapId);
+                let isDragging = false;
+                let startX = 0, startY = 0;
+                let initialLayoutX = 0, initialLayoutY = 0;
+
+                const onPointerDown = (e) => {
+                    audio.init();
+                    if (currentState === STATE.CUSTOM_LAYOUT) {
+                        isDragging = true;
+                        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                        startX = clientX;
+                        startY = clientY;
+                        initialLayoutX = touchLayout[item.key].x;
+                        initialLayoutY = touchLayout[item.key].y;
+                        e.preventDefault();
+                    }
+                };
+
+                const onPointerMove = (e) => {
+                    if (isDragging && currentState === STATE.CUSTOM_LAYOUT) {
+                        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                        const dx = ((clientX - startX) / window.innerWidth) * 100;
+                        const dy = ((clientY - startY) / window.innerHeight) * 100;
+
+                        touchLayout[item.key].x = Math.max(1, Math.min(88, initialLayoutX + dx));
+                        touchLayout[item.key].y = Math.max(5, Math.min(82, initialLayoutY + dy));
+
+                        applyTouchLayoutDOM();
+                        e.preventDefault();
+                    }
+                };
+
+                const onPointerUp = () => {
+                    isDragging = false;
+                };
+
+                wrap.addEventListener('touchstart', onPointerDown, { passive: false });
+                window.addEventListener('touchmove', onPointerMove, { passive: false });
+                window.addEventListener('touchend', onPointerUp);
+
+                wrap.addEventListener('mousedown', onPointerDown);
+                window.addEventListener('mousemove', onPointerMove);
+                window.addEventListener('mouseup', onPointerUp);
+            });
+        }
+
+        function setupTouchButtonInput(btnId, keyName) {
+            const btn = document.getElementById(btnId);
+            const start = (e) => {
+                if (currentState !== STATE.PLAYING) return;
+                e.preventDefault();
+                audio.init();
+                keys[keyName] = true;
+                if (keyName === 'jump') player.jump();
+                btn.classList.add('active');
+            };
+            const end = (e) => {
+                if (currentState !== STATE.PLAYING) return;
+                e.preventDefault();
+                keys[keyName] = false;
+                btn.classList.remove('active');
+            };
+            btn.addEventListener('touchstart', start, { passive: false });
+            btn.addEventListener('touchend', end, { passive: false });
+            btn.addEventListener('touchcancel', end, { passive: false });
+            btn.addEventListener('mousedown', start);
+            btn.addEventListener('mouseup', end);
+        }
+
+        setupTouchButtonInput('btn-left', 'left');
+        setupTouchButtonInput('btn-right', 'right');
+        setupTouchButtonInput('btn-jump', 'jump');
+
+        class Particle {
+            constructor(x, y, vx, vy, size, life, color = '#FFFFFF') {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.size = size;
+                this.life = life;
+                this.maxLife = life;
+                this.color = color;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life--;
+            }
+
+            draw(ctx, camX, camY) {
+                const alpha = Math.max(0, this.life / this.maxLife);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = alpha;
+                ctx.fillRect(Math.round(this.x - camX), Math.round(this.y - camY), this.size, this.size);
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        let particles = [];
+
+        function spawnDeathParticles(x, y) {
+            for (let i = 0; i < 18; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 1.2 + Math.random() * 3.5;
+                particles.push(new Particle(
+                    x, y,
+                    Math.cos(angle) * speed,
+                    Math.sin(angle) * speed,
+                    2 + Math.random() * 3,
+                    16 + Math.random() * 12,
+                    '#FFFFFF'
+                ));
+            }
+        }
+
+        class Player {
+            constructor() {
+                this.x = 60;
+                this.y = 350;
+                this.width = 18;
+                this.height = 22;
+                this.vx = 0;
+                this.vy = 0;
+                this.grounded = false;
+                this.alive = true;
+            }
+
+            reset(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = 0;
+                this.vy = 0;
+                this.grounded = false;
+                this.alive = true;
+            }
+
+            jump() {
+                if (this.grounded && this.alive) {
+                    this.vy = CONFIG.JUMP_FORCE;
+                    this.grounded = false;
+                    audio.playJump();
+                }
+            }
+
+            update(level) {
+                if (!this.alive) return;
+
+                if (keys.left) this.vx -= CONFIG.PLAYER_ACCEL;
+                if (keys.right) this.vx += CONFIG.PLAYER_ACCEL;
+
+                this.vx *= CONFIG.PLAYER_FRICTION;
+                this.vx = Math.max(-CONFIG.MAX_SPEED, Math.min(CONFIG.MAX_SPEED, this.vx));
+
+                this.vy += CONFIG.GRAVITY;
+                this.vy = Math.max(-CONFIG.MAX_FALL_SPEED, Math.min(CONFIG.MAX_FALL_SPEED, this.vy));
+
+                this.x += this.vx;
+                if (level) this.collideX(level);
+
+                this.y += this.vy;
+                if (level) this.collideY(level);
+
+                if (level && (this.y > level.height + 120 || this.y < -200)) {
+                    this.die();
+                }
+            }
+
+            collideX(level) {
+                if (!level || !level.platforms) return;
+                for (let p of level.platforms) {
+                    if (!p.active || !p.solid) continue;
+                    if (this.intersects(p)) {
+                        if (this.vx > 0) {
+                            this.x = p.x - this.width;
+                        } else if (this.vx < 0) {
+                            this.x = p.x + p.width;
+                        }
+                        this.vx = 0;
+                    }
+                }
+            }
+
+            collideY(level) {
+                this.grounded = false;
+                if (!level || !level.platforms) return;
+                for (let p of level.platforms) {
+                    if (!p.active || !p.solid) continue;
+
+                    if (this.intersects(p)) {
+                        if (this.vy > 0) {
+                            this.y = p.y - this.height;
+                            this.vy = 0;
+                            this.grounded = true;
+                            if (p.onLand) p.onLand(this);
+                        } else if (this.vy < 0) {
+                            this.y = p.y + p.height;
+                            this.vy = 0;
+                        }
+                    }
+                }
+            }
+
+            intersects(rect) {
+                return this.x < rect.x + rect.width &&
+                       this.x + this.width > rect.x &&
+                       this.y < rect.y + rect.height &&
+                       this.y + this.height > rect.y;
+            }
+
+            die() {
+                if (!this.alive) return;
+                this.alive = false;
+                spawnDeathParticles(this.x + this.width / 2, this.y + this.height / 2);
+                audio.playDeath();
+                if (shakeEnabled) screenShake = 7;
+
+                setTimeout(() => {
+                    restartCurrentLevel(true);
+                }, 450);
+            }
+
+            draw(ctx, camX, camY) {
+                if (!this.alive) return;
+                const rx = Math.round(this.x - camX);
+                const ry = Math.round(this.y - camY);
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(rx, ry, this.width, this.height);
+
+                ctx.fillStyle = '#000000';
+                const eyeX = this.vx >= 0 ? rx + 12 : rx + 3;
+                ctx.fillRect(eyeX, ry + 4, 3, 4);
+            }
+        }
+
+        const player = new Player();
+
+        class Platform {
+            constructor(x, y, w, h, options = {}) {
+                this.initialX = x;
+                this.initialY = y;
+                this.x = x;
+                this.y = y;
+                this.width = w;
+                this.height = h;
+                this.solid = options.solid !== undefined ? options.solid : true;
+                this.active = options.active !== undefined ? options.active : true;
+                this.onLand = options.onLand || null;
+                this.color = options.color || '#222230';
+                this.accentColor = options.accentColor || null;
+            }
+
+            reset() {
+                this.x = this.initialX;
+                this.y = this.initialY;
+                this.active = true;
+            }
+
+            update() {}
+
+            draw(ctx, camX, camY) {
+                if (!this.active) return;
+                const rx = Math.round(this.x - camX);
+                const ry = Math.round(this.y - camY);
+                ctx.fillStyle = this.color;
+                ctx.fillRect(rx, ry, this.width, this.height);
+
+                if (this.accentColor) {
+                    ctx.fillStyle = this.accentColor;
+                    ctx.fillRect(rx, ry, this.width, 3);
+                }
+            }
+        }
+
+        class Level {
+            constructor(id, width = 960, height = 500, spawnX = 60, spawnY = 350) {
+                this.id = id;
+                this.width = width;
+                this.height = height;
+                this.spawnX = spawnX;
+                this.spawnY = spawnY;
+                this.platforms = [];
+            }
+
+            reset() {
+                this.platforms.forEach(p => p.reset());
+            }
+
+            update() {
+                this.platforms.forEach(p => p.update());
+            }
+
+            draw(ctx, camX, camY) {
+                this.platforms.forEach(p => p.draw(ctx, camX, camY));
+            }
+        }
+
+        /*
+         * LEVEL 1 EXIT & TRICK
+         * Character-sized door (20x32, WHITE) and trap (20x20, WHITE)
+         */
+        class Level1Exit {
+            constructor() {
+                this.width = 20;
+                this.height = 32;
+                this.posA = { x: 720, y: 368 };
+                this.posB = { x: 460, y: 368 };
+                this.reset();
+            }
+
+            reset() {
+                this.x = this.posA.x;
+                this.y = this.posA.y;
+                this.hasMoved = false;
+                this.trap = null;
+            }
+
+            update(player) {
+                if (!player.alive) return;
+
+                const pCenterX = player.x + player.width / 2;
+                const pCenterY = player.y + player.height / 2;
+
+                /* Check trap collision at original door location */
+                if (this.trap && this.trap.active) {
+                    if (player.x < this.trap.x + this.trap.width &&
+                        player.x + player.width > this.trap.x &&
+                        player.y < this.trap.y + this.trap.height &&
+                        player.y + player.height > this.trap.y) {
+                        player.die();
+                        return;
+                    }
+                }
+
+                const distToDoor = Math.hypot(pCenterX - (this.x + this.width / 2), pCenterY - (this.y + this.height / 2));
+
+                /* TRICK LOGIC */
+                if (!this.hasMoved) {
+                    if (distToDoor < 100) {
+                        this.trap = {
+                            x: this.posA.x,
+                            y: this.posA.y + 12,
+                            width: 20,
+                            height: 20,
+                            active: true
+                        };
+                        this.x = this.posB.x;
+                        this.y = this.posB.y;
+                        this.hasMoved = true;
+                        audio.playClick();
+                    }
+                } else {
+                    if (player.intersects(this) || distToDoor < 30) {
+                        completeCurrentLevel();
+                    }
+                }
+            }
+
+            draw(ctx, camX, camY) {
+                /* Render Trap - WHITE */
+                if (this.trap && this.trap.active) {
+                    const rx = Math.round(this.trap.x - camX);
+                    const ry = Math.round(this.trap.y - camY);
+
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(rx, ry, this.trap.width, this.trap.height);
+
+                    ctx.fillStyle = '#111116';
+                    const spikeCount = 3;
+                    const sw = this.trap.width / spikeCount;
+                    for (let i = 0; i < spikeCount; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(rx + i * sw, ry + this.trap.height);
+                        ctx.lineTo(rx + (i + 0.5) * sw, ry + 4);
+                        ctx.lineTo(rx + (i + 1) * sw, ry + this.trap.height);
+                        ctx.fill();
+                    }
+                }
+
+                /* Render Door - WHITE */
+                const rx = Math.round(this.x - camX);
+                const ry = Math.round(this.y - camY);
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.shadowColor = 'rgba(255, 255, 255, 0.6)';
+                ctx.shadowBlur = 8;
+                ctx.fillRect(rx, ry, this.width, this.height);
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = '#111116';
+                ctx.fillRect(rx + 3, ry + 3, this.width - 6, this.height - 3);
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.beginPath();
+                ctx.arc(rx + this.width - 5, ry + this.height / 2, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        /*
+         * LEVEL 2 EXIT & 4 PSYCHOLOGICAL TRICKS
+         * Door = WHITE (20x32)
+         * Traps = WHITE (20x20)
+         */
+        class Level2Exit {
+            constructor() {
+                this.width = 20;
+                this.height = 32;
+                this.reset();
+            }
+
+            reset() {
+                this.trickStage = 1;
+                this.x = 380;
+                this.y = 368;
+                this.traps = [];
+                this.bridgeActive = false;
+                this.doorLocked = false;
+            }
+
+            update(player, level2Bridge) {
+                if (!player.alive) return;
+
+                const pCenterX = player.x + player.width / 2;
+                const pCenterY = player.y + player.height / 2;
+
+                /* Check trap collisions */
+                for (let t of this.traps) {
+                    if (t.active &&
+                        player.x < t.x + t.width &&
+                        player.x + player.width > t.x &&
+                        player.y < t.y + t.height &&
+                        player.y + player.height > t.y) {
+                        player.die();
+                        return;
+                    }
+                }
+
+                const distToDoor = Math.hypot(pCenterX - (this.x + this.width / 2), pCenterY - (this.y + this.height / 2));
+
+                /* TRICK 1: The Reverse Spawn */
+                if (this.trickStage === 1) {
+                    if (player.x > 220 && this.x === 380) {
+                        this.traps.push({ x: 380, y: 380, width: 20, height: 20, active: true });
+                        this.x = 80;
+                        this.y = 368;
+                        audio.playClick();
+                    } else if (this.x === 80 && (player.intersects(this) || distToDoor < 30)) {
+                        this.trickStage = 2;
+                        this.x = 560;
+                        this.y = 310;
+                        audio.playClick();
+                    }
+                }
+                /* TRICK 2: The Low Drop Switch */
+                else if (this.trickStage === 2) {
+                    if (player.x > 500 && this.y === 310) {
+                        this.y = 368;
+                        audio.playClick();
+                    } else if (this.y === 368 && (player.intersects(this) || distToDoor < 30)) {
+                        this.trickStage = 3;
+                        this.x = 820;
+                        this.y = 368;
+                        audio.playClick();
+                    }
+                }
+                /* TRICK 3: The Faith Bridge & Decoy Door */
+                else if (this.trickStage === 3) {
+                    if (player.x > 670) {
+                        this.bridgeActive = true;
+                        if (level2Bridge) level2Bridge.solid = true;
+                    }
+                    if (player.intersects(this) || distToDoor < 30) {
+                        this.traps.push({ x: 820, y: 380, width: 20, height: 20, active: true });
+                        this.trickStage = 4;
+                        this.x = 1080;
+                        this.y = 368;
+                        this.doorLocked = false;
+                        audio.playClick();
+                    }
+                }
+                /* TRICK 4: The Retreat Lock */
+                else if (this.trickStage === 4) {
+                    if (!this.doorLocked) {
+                        if (distToDoor < 90 && this.x < 1140) {
+                            this.x += 0.8;
+                        }
+                        if (keys.left || player.vx < -0.4) {
+                            this.doorLocked = true;
+                            audio.playClick();
+                        }
+                    } else {
+                        if (player.intersects(this) || distToDoor < 35) {
+                            completeCurrentLevel();
+                        }
+                    }
+                }
+            }
+
+            draw(ctx, camX, camY) {
+                if (this.bridgeActive) {
+                    const bx = Math.round(660 - camX);
+                    const by = Math.round(400 - camY);
+                    ctx.fillStyle = '#00F0FF';
+                    ctx.globalAlpha = 0.45;
+                    ctx.fillRect(bx, by, 120, 100);
+                    ctx.fillRect(bx, by, 120, 3);
+                    ctx.globalAlpha = 1.0;
+                }
+
+                for (let t of this.traps) {
+                    if (!t.active) continue;
+                    const rx = Math.round(t.x - camX);
+                    const ry = Math.round(t.y - camY);
+
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(rx, ry, t.width, t.height);
+
+                    ctx.fillStyle = '#111116';
+                    const spikeCount = 3;
+                    const sw = t.width / spikeCount;
+                    for (let i = 0; i < spikeCount; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(rx + i * sw, ry + t.height);
+                        ctx.lineTo(rx + (i + 0.5) * sw, ry + 4);
+                        ctx.lineTo(rx + (i + 1) * sw, ry + t.height);
+                        ctx.fill();
+                    }
+                }
+
+                const rx = Math.round(this.x - camX);
+                const ry = Math.round(this.y - camY);
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.shadowColor = 'rgba(255, 255, 255, 0.6)';
+                ctx.shadowBlur = 8;
+                ctx.fillRect(rx, ry, this.width, this.height);
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = '#111116';
+                ctx.fillRect(rx + 3, ry + 3, this.width - 6, this.height - 3);
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.beginPath();
+                ctx.arc(rx + this.width - 5, ry + this.height / 2, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        /*
+         * LEVEL 3 EXIT & 4 PSYCHOLOGICAL TRICKS
+         * Difficulty: EXACTLY 3%
+         * Environment: Crimson Rose Industrial (#1F0810 / #FF1E56)
+         * Door = WHITE (20x32)
+         * Traps = WHITE (20x20)
+         */
+        class Level3Exit {
+            constructor() {
+                this.width = 20;
+                this.height = 32;
+                this.reset();
+            }
+
+            reset() {
+                this.trickStage = 1;
+                this.x = 320;
+                this.y = 368;
+                this.traps = [];
+                this.stillTimer = 0;
+                this.trick1Locked = false;
+                
+                this.gateY = 360;
+                this.gateLowered = false;
+
+                this.trick3Unlocked = false;
+
+                this.pressureTimer = 0;
+                this.elevatorLowered = false;
+            }
+
+            update(player) {
+                if (!player.alive) return;
+
+                const pCenterX = player.x + player.width / 2;
+                const pCenterY = player.y + player.height / 2;
+
+                /* Check trap collisions */
+                for (let t of this.traps) {
+                    if (t.active &&
+                        player.x < t.x + t.width &&
+                        player.x + player.width > t.x &&
+                        player.y < t.y + t.height &&
+                        player.y + player.height > t.y) {
+                        player.die();
+                        return;
+                    }
+                }
+
+                const distToDoor = Math.hypot(pCenterX - (this.x + this.width / 2), pCenterY - (this.y + this.height / 2));
+
+                /* TRICK 1: The Staredown */
+                if (this.trickStage === 1) {
+                    if (!this.trick1Locked) {
+                        if (player.x > 180 && player.x < this.x && Math.abs(player.vx) > 0.1) {
+                            this.x = Math.min(420, this.x + 1.2);
+                        }
+                        if (player.x > 180 && Math.abs(player.vx) < 0.1 && !keys.left && !keys.right) {
+                            this.stillTimer += 1 / 60;
+                            if (this.stillTimer >= 0.8) {
+                                this.trick1Locked = true;
+                                audio.playClick();
+                            }
+                        } else if (Math.abs(player.vx) > 0.1) {
+                            this.stillTimer = 0;
+                        }
+                    } else {
+                        if (player.intersects(this) || distToDoor < 30) {
+                            this.traps.push({ x: this.x, y: 380, width: 20, height: 20, active: true });
+                            this.trickStage = 2;
+                            this.x = 560;
+                            this.y = 368;
+                            audio.playClick();
+                        }
+                    }
+                }
+                /* TRICK 2: The Jump Gate */
+                else if (this.trickStage === 2) {
+                    if (!this.gateLowered) {
+                        if (player.x > 450 && keys.jump) {
+                            this.gateLowered = true;
+                            audio.playClick();
+                        }
+                    } else {
+                        if (this.gateY < 400) this.gateY += 2;
+                        if (player.intersects(this) || distToDoor < 30) {
+                            this.traps.push({ x: 560, y: 380, width: 20, height: 20, active: true });
+                            this.trickStage = 3;
+                            this.x = 800;
+                            this.y = 368;
+                            audio.playClick();
+                        }
+                    }
+                }
+                /* TRICK 3: The Directional Flash Switch */
+                else if (this.trickStage === 3) {
+                    if (!this.trick3Unlocked) {
+                        if (player.x > 660 && keys.left) {
+                            this.trick3Unlocked = true;
+                            audio.playClick();
+                        }
+                    } else {
+                        if (player.intersects(this) || distToDoor < 30) {
+                            this.traps.push({ x: 800, y: 380, width: 20, height: 20, active: true });
+                            this.trickStage = 4;
+                            this.x = 1060;
+                            this.y = 320;
+                            audio.playClick();
+                        }
+                    }
+                }
+                /* TRICK 4: The Pressure Elevator */
+                else if (this.trickStage === 4) {
+                    if (!this.elevatorLowered) {
+                        if (player.x >= 910 && player.x <= 980 && player.grounded) {
+                            this.pressureTimer += 1 / 60;
+                            if (this.pressureTimer >= 0.5) {
+                                this.elevatorLowered = true;
+                                audio.playClick();
+                            }
+                        }
+                    } else {
+                        if (this.y < 368) this.y += 1.5;
+                        if (player.intersects(this) || distToDoor < 35) {
+                            completeCurrentLevel();
+                        }
+                    }
+                }
+            }
+
+            draw(ctx, camX, camY) {
+                /* Render Pressure Pad for Trick 4 */
+                if (this.trickStage === 4) {
+                    const px = Math.round(930 - camX);
+                    const py = Math.round(396 - camY);
+                    ctx.fillStyle = this.elevatorLowered ? '#44FF77' : '#FF1E56';
+                    ctx.fillRect(px, py, 50, 4);
+                }
+
+                /* Render Gate for Trick 2 */
+                if (this.trickStage === 2 && this.gateY < 400) {
+                    const gx = Math.round(520 - camX);
+                    const gy = Math.round(this.gateY - camY);
+                    ctx.fillStyle = '#FF1E56';
+                    ctx.fillRect(gx, gy, 8, 40);
+                }
+
+                /* Render Barrier for Trick 3 */
+                if (this.trickStage === 3 && !this.trick3Unlocked) {
+                    const bx = Math.round(760 - camX);
+                    const by = Math.round(368 - camY);
+                    ctx.fillStyle = '#FF1E56';
+                    ctx.globalAlpha = 0.65;
+                    ctx.fillRect(bx, by, 6, 32);
+                    ctx.globalAlpha = 1.0;
+                }
+
+                /* Render Traps - WHITE (20x20) */
+                for (let t of this.traps) {
+                    if (!t.active) continue;
+                    const rx = Math.round(t.x - camX);
+                    const ry = Math.round(t.y - camY);
+
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(rx, ry, t.width, t.height);
+
+                    ctx.fillStyle = '#111116';
+                    const spikeCount = 3;
+                    const sw = t.width / spikeCount;
+                    for (let i = 0; i < spikeCount; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(rx + i * sw, ry + t.height);
+                        ctx.lineTo(rx + (i + 0.5) * sw, ry + 4);
+                        ctx.lineTo(rx + (i + 1) * sw, ry + t.height);
+                        ctx.fill();
+                    }
+                }
+
+                /* Render Door - WHITE (20x32) */
+                const rx = Math.round(this.x - camX);
+                const ry = Math.round(this.y - camY);
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.shadowColor = 'rgba(255, 255, 255, 0.6)';
+                ctx.shadowBlur = 8;
+                ctx.fillRect(rx, ry, this.width, this.height);
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = '#111116';
+                ctx.fillRect(rx + 3, ry + 3, this.width - 6, this.height - 3);
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.beginPath();
+                ctx.arc(rx + this.width - 5, ry + this.height / 2, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        /*
+         * LEVEL 4 EXIT & 5 NEW PSYCHOLOGICAL TRICKS
+         * Difficulty: EXACTLY 4%
+         * Environment: Cyber Emerald (#0A1F10 / #00FF66)
+         * Door = WHITE (20x32), Trap = WHITE (20x20)
+         */
+        class Level4Exit {
+            constructor() {
+                this.width = 20;
+                this.height = 32;
+                this.reset();
+            }
+
+            reset() {
+                this.trickStage = 1;
+                this.x = 280;
+                this.y = 368;
+                this.traps = [];
+
+                this.heavyFootDone = false;
+                this.trick2Locked = false;
+                this.trick3Unlocked = false;
+
+                this.pulseTimer = 0;
+                this.isPulseGreen = false;
+                this.trick4Unlocked = false;
+
+                this.trick5Active = true;
+            }
+
+            update(player) {
+                if (!player.alive) return;
+
+                const pCenterX = player.x + player.width / 2;
+                const pCenterY = player.y + player.height / 2;
+
+                for (let t of this.traps) {
+                    if (t.active &&
+                        player.x < t.x + t.width &&
+                        player.x + player.width > t.x &&
+                        player.y < t.y + t.height &&
+                        player.y + player.height > t.y) {
+                        player.die();
+                        return;
+                    }
+                }
+
+                const distToDoor = Math.hypot(pCenterX - (this.x + this.width / 2), pCenterY - (this.y + this.height / 2));
+
+                /* TRICK 1: The Heavy Foot */
+                if (this.trickStage === 1) {
+                    if (!this.heavyFootDone) {
+                        if (player.x >= 140 && player.x <= 200 && player.y <= 325 && player.grounded) {
+                            this.heavyFootDone = true;
+                            audio.playClick();
+                        }
+                    } else {
+                        if (player.intersects(this) || distToDoor < 30) {
+                            this.traps.push({ x: 280, y: 380, width: 20, height: 20, active: true });
+                            this.trickStage = 2;
+                            this.x = 520;
+                            this.y = 368;
+                            audio.playClick();
+                        }
+                    }
+                }
+                /* TRICK 2: The Double Back */
+                else if (this.trickStage === 2) {
+                    if (!this.trick2Locked) {
+                        if (player.x > 450 && this.x < 570) {
+                            this.x += 1.0;
+                        }
+                        if (player.x > 440 && keys.left) {
+                            this.trick2Locked = true;
+                            this.x = 500;
+                            audio.playClick();
+                        }
+                    } else {
+                        if (player.intersects(this) || distToDoor < 30) {
+                            this.traps.push({ x: 500, y: 380, width: 20, height: 20, active: true });
+                            this.trickStage = 3;
+                            this.x = 780;
+                            this.y = 368;
+                            audio.playClick();
+                        }
+                    }
+                }
+                /* TRICK 3: The Crouching Shadow */
+                else if (this.trickStage === 3) {
+                    if (!this.trick3Unlocked) {
+                        if (player.x > 700) {
+                            if (player.grounded) {
+                                this.trick3Unlocked = true;
+                                audio.playClick();
+                            }
+                        }
+                    } else {
+                        if (player.intersects(this) || distToDoor < 30) {
+                            this.traps.push({ x: 780, y: 380, width: 20, height: 20, active: true });
+                            this.trickStage = 4;
+                            this.x = 1050;
+                            this.y = 368;
+                            audio.playClick();
+                        }
+                    }
+                }
+                /* TRICK 4: The Rhythm Pulse */
+                else if (this.trickStage === 4) {
+                    this.pulseTimer += 1 / 60;
+                    this.isPulseGreen = Math.floor(this.pulseTimer) % 2 === 0;
+
+                    if (!this.trick4Unlocked) {
+                        if (player.x > 980 && player.x < 1040) {
+                            if (this.isPulseGreen) {
+                                this.trick4Unlocked = true;
+                                audio.playClick();
+                            }
+                        }
+                    } else {
+                        if (player.intersects(this) || distToDoor < 30) {
+                            this.traps.push({ x: 1050, y: 380, width: 20, height: 20, active: true });
+                            this.trickStage = 5;
+                            this.x = 1380;
+                            this.y = 368;
+                            audio.playClick();
+                        }
+                    }
+                }
+                /* TRICK 5: The Echo Mirror */
+                else if (this.trickStage === 5) {
+                    if (player.x > 1150) {
+                        const diff = (player.x + 100) - this.x;
+                        if (Math.abs(diff) > 5) {
+                            this.x += diff * 0.03;
+                        }
+                    }
+                    if (player.intersects(this) || distToDoor < 35) {
+                        completeCurrentLevel();
+                    }
+                }
+            }
+
+            draw(ctx, camX, camY) {
+                if (this.trickStage === 1) {
+                    const hx = Math.round(150 - camX);
+                    const hy = Math.round(340 - camY);
+                    ctx.fillStyle = this.heavyFootDone ? '#00FF66' : '#336644';
+                    ctx.fillRect(hx, hy, 50, 6);
+                }
+
+                if (this.trickStage === 4) {
+                    const px = Math.round(1010 - camX);
+                    const py = Math.round(330 - camY);
+                    ctx.fillStyle = this.isPulseGreen ? '#00FF66' : '#FF3333';
+                    ctx.beginPath();
+                    ctx.arc(px, py, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                for (let t of this.traps) {
+                    if (!t.active) continue;
+                    const rx = Math.round(t.x - camX);
+                    const ry = Math.round(t.y - camY);
+
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(rx, ry, t.width, t.height);
+
+                    ctx.fillStyle = '#111116';
+                    const spikeCount = 3;
+                    const sw = t.width / spikeCount;
+                    for (let i = 0; i < spikeCount; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(rx + i * sw, ry + t.height);
+                        ctx.lineTo(rx + (i + 0.5) * sw, ry + 4);
+                        ctx.lineTo(rx + (i + 1) * sw, ry + t.height);
+                        ctx.fill();
+                    }
+                }
+
+                const rx = Math.round(this.x - camX);
+                const ry = Math.round(this.y - camY);
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.shadowColor = 'rgba(255, 255, 255, 0.6)';
+                ctx.shadowBlur = 8;
+                ctx.fillRect(rx, ry, this.width, this.height);
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = '#111116';
+                ctx.fillRect(rx + 3, ry + 3, this.width - 6, this.height - 3);
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.beginPath();
+                ctx.arc(rx + this.width - 5, ry + this.height / 2, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        /*
+         * LEVEL 5 EXIT & 6 NEW PSYCHOLOGICAL TRICKS
+         * Difficulty: EXACTLY 5%
+         * Environment: Solar Amber (#201500 / #FF9900)
+         * Door = WHITE (20x32), Trap = WHITE (20x20)
+         */
+        class Level5Exit {
+            constructor() {
+                this.width = 20;
+                this.height = 32;
+                this.reset();
+            }
+
+            reset() {
+                this.trickStage = 1;
+                this.x = 250;
+                this.y = 280;
+                this.traps = [];
+
+                this.trick1Dropped = false;
+                this.trick2Braked = false;
+
+                this.jumpTaps = 0;
+                this.lastJumpState = false;
+                this.trick3Unlocked = false;
+
+                this.trick4Unlocked = false;
+                this.trick5Unlocked = false;
+            }
+
+            update(player) {
+                if (!player.alive) return;
+
+                const pCenterX = player.x + player.width / 2;
+                const pCenterY = player.y + player.height / 2;
+
+                for (let t of this.traps) {
+                    if (t.active &&
+                        player.x < t.x + t.width &&
+                        player.x + player.width > t.x &&
+                        player.y < t.y + t.height &&
+                        player.y + player.height > t.y) {
+                        player.die();
+                        return;
+                    }
+                }
+
+                const distToDoor = Math.hypot(pCenterX - (this.x + this.width / 2), pCenterY - (this.y + this.height / 2));
+
+                /* TRICK 1: The High-Low Flip */
+                if (this.trickStage === 1) {
+                    if (!this.trick1Dropped) {
+                        if (player.x > 180 && player.y < 350) {
+                            this.y = 368;
+                            this.trick1Dropped = true;
+                            audio.playClick();
+                        }
+                    } else {
+                        if (player.intersects(this) || distToDoor < 30) {
+                            this.traps.push({ x: 250, y: 380, width: 20, height: 20, active: true });
+                            this.trickStage = 2;
+                            this.x = 500;
+                            this.y = 368;
+                            audio.playClick();
+                        }
+                    }
+                }
+                /* TRICK 2: The Friction Stop */
+                else if (this.trickStage === 2) {
+                    if (!this.trick2Braked) {
+                        if (player.x > 400 && player.x < 480 && Math.abs(player.vx) < 0.05 && !keys.left && !keys.right) {
+                            this.trick2Braked = true;
+                            this.x = 480;
+                            audio.playClick();
+                        } else if (player.x > 420 && !this.trick2Braked) {
+                            if (this.x < 550) this.x += 1.0;
+                        }
+                    } else {
+                        if (player.intersects(this) || distToDoor < 30) {
+                            this.traps.push({ x: 480, y: 380, width: 20, height: 20, active: true });
+                            this.trickStage = 3;
+                            this.x = 750;
+                            this.y = 368;
+                            audio.playClick();
+                        }
+                    }
+                }
+                /* TRICK 3: The Triple Tap */
+                else if (this.trickStage === 3) {
+                    if (!this.trick3Unlocked) {
+                        if (player.x >= 600 && player.x <= 720) {
+                            if (keys.jump && !this.lastJumpState) {
+                                this.jumpTaps++;
+                                audio.playClick();
+                                if (this.jumpTaps >= 3) {
+                                    this.trick3Unlocked = true;
+                                }
+                            }
+                        }
+                        this.lastJumpState = keys.jump;
+                    } else {
+                        if (player.intersects(this) || distToDoor < 30) {
+                            this.traps.push({ x: 750, y: 380, width: 20, height: 20, active: true });
+                            this.trickStage = 4;
+                            this.x = 1020;
+                            this.y = 368;
+                            audio.playClick();
+                        }
+                    }
+                }
+                /* TRICK 4: The Backwards Entry */
+                else if (this.trickStage === 4) {
+                    if (!this.trick4Unlocked) {
+                        if (player.x > 1030 && (keys.left || player.vx < -0.2)) {
+                            this.trick4Unlocked = true;
+                            audio.playClick();
+                        }
+                    } else {
+                        if (player.intersects(this) || distToDoor < 30) {
+                            this.traps.push({ x: 1020, y: 380, width: 20, height: 20, active: true });
+                            this.trickStage = 5;
+                            this.x = 1300;
+                            this.y = 368;
+                            audio.playClick();
+                        }
+                    }
+                }
+                /* TRICK 5: The Zenith Peak */
+                else if (this.trickStage === 5) {
+                    if (!this.trick5Unlocked) {
+                        if (player.x > 1200 && !player.grounded && player.y < 330 && Math.abs(player.vy) < 2.0) {
+                            this.trick5Unlocked = true;
+                            audio.playClick();
+                        }
+                    } else {
+                        if (player.intersects(this) || distToDoor < 30) {
+                            this.traps.push({ x: 1300, y: 380, width: 20, height: 20, active: true });
+                            this.trickStage = 6;
+                            this.x = 1580;
+                            this.y = 350;
+                            audio.playClick();
+                        }
+                    }
+                }
+                /* TRICK 6: The Magnet Drift */
+                else if (this.trickStage === 6) {
+                    if (distToDoor < 140) {
+                        this.y += (368 - this.y) * 0.08;
+                        player.x += (this.x - player.x) * 0.05;
+                    }
+                    if (player.intersects(this) || distToDoor < 35) {
+                        completeCurrentLevel();
+                    }
+                }
+            }
+
+            draw(ctx, camX, camY) {
+                if (this.trickStage === 3 && !this.trick3Unlocked) {
+                    const cx = Math.round(660 - camX);
+                    const cy = Math.round(330 - camY);
+                    ctx.fillStyle = '#FF9900';
+                    for (let i = 0; i < 3; i++) {
+                        ctx.beginPath();
+                        ctx.arc(cx + i * 14, cy, 4, 0, Math.PI * 2);
+                        if (i < this.jumpTaps) ctx.fill();
+                        else ctx.stroke();
+                    }
+                }
+
+                if (this.trickStage === 6) {
+                    const mx = Math.round(this.x + 10 - camX);
+                    const my = Math.round(this.y + 16 - camY);
+                    ctx.strokeStyle = '#FF9900';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(mx, my, 24, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                for (let t of this.traps) {
+                    if (!t.active) continue;
+                    const rx = Math.round(t.x - camX);
+                    const ry = Math.round(t.y - camY);
+
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(rx, ry, t.width, t.height);
+
+                    ctx.fillStyle = '#111116';
+                    const spikeCount = 3;
+                    const sw = t.width / spikeCount;
+                    for (let i = 0; i < spikeCount; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(rx + i * sw, ry + t.height);
+                        ctx.lineTo(rx + (i + 0.5) * sw, ry + 4);
+                        ctx.lineTo(rx + (i + 1) * sw, ry + t.height);
+                        ctx.fill();
+                    }
+                }
+
+                const rx = Math.round(this.x - camX);
+                const ry = Math.round(this.y - camY);
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.shadowColor = 'rgba(255, 255, 255, 0.6)';
+                ctx.shadowBlur = 8;
+                ctx.fillRect(rx, ry, this.width, this.height);
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = '#111116';
+                ctx.fillRect(rx + 3, ry + 3, this.width - 6, this.height - 3);
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.beginPath();
+                ctx.arc(rx + this.width - 5, ry + this.height / 2, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        /*
+         * LEVEL 6 EXIT & 7 NEW PSYCHOLOGICAL TRICKS
+         * Difficulty: EXACTLY 6%
+         * Environment: Deep Sapphire Neon (#0B1026 / #A855F7)
+         * Door = WHITE (20x32), Trap = WHITE (20x20)
+         */
+        class Level6Exit {
+            constructor() {
+                this.width = 20;
+                this.height = 32;
+                this.reset();
+            }
+
+            reset() {
+                this.trickStage = 1;
+                this.x = 260;
+                this.y = 368;
+                this.traps = [];
+
+                this.stepTimer = 0;
+                this.trick1Unlocked = false;
+
+                this.beaconTimer = 0;
+                this.trick2Unlocked = false;
+
+                this.trick3Unlocked = false;
+                this.trick4Unlocked = false;
+                this.trick5Unlocked = false;
+
+                this.padA = false;
+                this.padB = false;
+                this.trick6Unlocked = false;
+            }
+
+            update(player) {
+                if (!player.alive) return;
+
+                const pCenterX = player.x + player.width / 2;
+                const pCenterY = player.y + player.height / 2;
+
+                for (let t of this.traps) {
+                    if (t.active &&
+                        player.x < t.x + t.width &&
+                        player.x + player.width > t.x &&
+                        player.y < t.y + t.height &&
+                        player.y + player.height > t.y) {
+                        player.die();
+                        return;
+                    }
+                }
+
+                const distToDoor = Math.hypot(pCenterX - (this.x + this.width / 2), pCenterY - (this.y + this.height / 2));
+
+                /* TRICK 1: The Staccato Walk */
+                if (this.trickStage === 1) {
+                    if (!this.trick1Unlocked) {
+                        if (player.x > 160 && player.x < 250) {
+                            if (Math.abs(player.vx) > 0.1) {
+                                this.stepTimer += 1 / 60;
+                                if (this.stepTimer > 0.35) {
+                                    this.x = Math.min(320, this.x + 0.8);
+                                }
+                            } else {
+                                this.stepTimer = 0;
+                            }
+                            if (player.x > 220 && this.stepTimer < 0.2) {
+                                this.trick1Unlocked = true;
+                                this.x = 260;
+                                audio.playClick();
+                            }
+                        }
+                    } else {
+                        if (player.intersects(this) || distToDoor < 30) {
+                            this.traps.push({ x: 260, y: 380, width: 20, height: 20, active: true });
+                            this.trickStage = 2;
+                            this.x = 520;
+                            this.y = 368;
+                            audio.playClick();
+                        }
+                    }
+                }
+                /* TRICK 2: The Shadow Beacon */
+                else if (this.trickStage === 2) {
+                    if (!this.trick2Unlocked) {
+                        if (player.x >= 380 && player.x <= 420 && player.grounded) {
+                            this.beaconTimer += 1 / 60;
+                            if (this.beaconTimer >= 0.4) {
+                                this.trick2Unlocked = true;
+                                audio.playClick();
+                            }
+                        }
+                    } else {
+                        if (player.intersects(this) || distToDoor < 30) {
+                            this.traps.push({ x: 520, y: 380, width: 20, height: 20, active: true });
+                            this.trickStage = 3;
+                            this.x = 780;
+                            this.y = 368;
+                            audio.playClick();
+                        }
+                    }
+                }
+                /* TRICK 3: The Air Lock */
+                else if (this.trickStage === 3) {
+                    if (!this.trick3Unlocked) {
+                        if (player.x > 680 && keys.jump) {
+                            this.trick3Unlocked = true;
+                            audio.playClick();
+                        } else if (player.x > 680 && !this.trick3Unlocked) {
+                            if (this.x < 850) this.x += 0.9;
+                        }
+                    } else {
+                        if (player.intersects(this) || distToDoor < 30) {
+                            this.traps.push({ x: 780, y: 380, width: 20, height: 20, active: true });
+                            this.trickStage = 4;
+                            this.x = 1050;
+                            this.y = 368;
+                            audio.playClick();
+                        }
+                    }
+                }
+                /* TRICK 4: The Velocity Cap */
+                else if (this.trickStage === 4) {
+                    if (!this.trick4Unlocked) {
+                        if (player.x > 950 && player.x < 1040) {
+                            if (Math.abs(player.vx) > 0.05 && Math.abs(player.vx) < 2.5) {
+                                this.trick4Unlocked = true;
+                                audio.playClick();
+                            }
+                        }
+                    } else {
+                        if (player.intersects(this) || distToDoor < 30) {
+                            this.traps.push({ x: 1050, y: 380, width: 20, height: 20, active: true });
+                            this.trickStage = 5;
+                            this.x = 1320;
+                            this.y = 368;
+                            audio.playClick();
+                        }
+                    }
+                }
+                /* TRICK 5: The Orbit Switch */
+                else if (this.trickStage === 5) {
+                    if (!this.trick5Unlocked) {
+                        if (player.x > 1230 && player.x < 1270 && !player.grounded && player.y < 330) {
+                            this.trick5Unlocked = true;
+                            audio.playClick();
+                        }
+                    } else {
+                        if (player.intersects(this) || distToDoor < 30) {
+                            this.traps.push({ x: 1320, y: 380, width: 20, height: 20, active: true });
+                            this.trickStage = 6;
+                            this.x = 1600;
+                            this.y = 368;
+                            audio.playClick();
+                        }
+                    }
+                }
+                /* TRICK 6: The Dual-Pad Synchronizer */
+                else if (this.trickStage === 6) {
+                    if (!this.trick6Unlocked) {
+                        if (player.x >= 1430 && player.x <= 1470 && player.grounded) {
+                            if (!this.padA) {
+                                this.padA = true;
+                                audio.playClick();
+                            }
+                        }
+                        if (this.padA && player.x >= 1500 && player.x <= 1540 && player.grounded) {
+                            if (!this.padB) {
+                                this.padB = true;
+                                this.trick6Unlocked = true;
+                                audio.playClick();
+                            }
+                        }
+                    } else {
+                        if (player.intersects(this) || distToDoor < 30) {
+                            this.traps.push({ x: 1600, y: 380, width: 20, height: 20, active: true });
+                            this.trickStage = 7;
+                            this.x = 1880;
+                            this.y = 368;
+                            audio.playClick();
+                        }
+                    }
+                }
+                /* TRICK 7: The Final Horizon */
+                else if (this.trickStage === 7) {
+                    if (player.intersects(this) || distToDoor < 35) {
+                        completeCurrentLevel();
+                    }
+                }
+            }
+
+            draw(ctx, camX, camY) {
+                if (this.trickStage === 2) {
+                    const bx = Math.round(400 - camX);
+                    const by = Math.round(396 - camY);
+                    ctx.fillStyle = this.trick2Unlocked ? '#A855F7' : '#442266';
+                    ctx.fillRect(bx - 15, by, 30, 4);
+                }
+
+                if (this.trickStage === 4 && !this.trick4Unlocked) {
+                    const sx = Math.round(980 - camX);
+                    const sy = Math.round(368 - camY);
+                    ctx.fillStyle = '#A855F7';
+                    ctx.globalAlpha = 0.5;
+                    ctx.fillRect(sx, sy, 4, 32);
+                    ctx.globalAlpha = 1.0;
+                }
+
+                if (this.trickStage === 5) {
+                    const ox = Math.round(1250 - camX);
+                    const oy = Math.round(340 - camY);
+                    ctx.fillStyle = this.trick5Unlocked ? '#A855F7' : '#663399';
+                    ctx.beginPath();
+                    ctx.arc(ox, oy, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                if (this.trickStage === 6) {
+                    const paX = Math.round(1450 - camX);
+                    const pbX = Math.round(1520 - camX);
+                    const py = Math.round(396 - camY);
+
+                    ctx.fillStyle = this.padA ? '#A855F7' : '#442266';
+                    ctx.fillRect(paX - 12, py, 24, 4);
+
+                    ctx.fillStyle = this.padB ? '#A855F7' : '#442266';
+                    ctx.fillRect(pbX - 12, py, 24, 4);
+                }
+
+                for (let t of this.traps) {
+                    if (!t.active) continue;
+                    const rx = Math.round(t.x - camX);
+                    const ry = Math.round(t.y - camY);
+
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(rx, ry, t.width, t.height);
+
+                    ctx.fillStyle = '#111116';
+                    const spikeCount = 3;
+                    const sw = t.width / spikeCount;
+                    for (let i = 0; i < spikeCount; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(rx + i * sw, ry + t.height);
+                        ctx.lineTo(rx + (i + 0.5) * sw, ry + 4);
+                        ctx.lineTo(rx + (i + 1) * sw, ry + t.height);
+                        ctx.fill();
+                    }
+                }
+
+                const rx = Math.round(this.x - camX);
+                const ry = Math.round(this.y - camY);
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.shadowColor = 'rgba(255, 255, 255, 0.6)';
+                ctx.shadowBlur = 8;
+                ctx.fillRect(rx, ry, this.width, this.height);
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = '#111116';
+                ctx.fillRect(rx + 3, ry + 3, this.width - 6, this.height - 3);
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.beginPath();
+                ctx.arc(rx + this.width - 5, ry + this.height / 2, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        const levels = [];
+
+        /* ================= LEVEL 1 ================= */
+        const level1 = new Level(1, 960, 500, 80, 340);
+        level1.platforms.push(new Platform(0, 400, 960, 100, { color: '#222230', solid: true }));
+        const level1Exit = new Level1Exit();
+
+        const origL1Reset = level1.reset.bind(level1);
+        level1.reset = function() {
+            origL1Reset();
+            level1Exit.reset();
+        };
+
+        const origL1Update = level1.update.bind(level1);
+        level1.update = function() {
+            origL1Update();
+            level1Exit.update(player);
+        };
+
+        const origL1Draw = level1.draw.bind(level1);
+        level1.draw = function(ctx, camX, camY) {
+            origL1Draw(ctx, camX, camY);
+            level1Exit.draw(ctx, camX, camY);
+        };
+
+        levels.push(level1);
+
+        /* ================= LEVEL 2 ================= */
+        const level2 = new Level(2, 1250, 500, 60, 340);
+        level2.platforms.push(new Platform(0, 400, 440, 100, { color: '#0A1520', accentColor: '#00F0FF', solid: true }));
+        level2.platforms.push(new Platform(470, 400, 190, 100, { color: '#0A1520', accentColor: '#00F0FF', solid: true }));
+
+        const level2BridgePlatform = new Platform(660, 400, 120, 100, { color: '#0A1520', accentColor: '#00F0FF', solid: false });
+        level2.platforms.push(level2BridgePlatform);
+
+        level2.platforms.push(new Platform(780, 400, 220, 100, { color: '#0A1520', accentColor: '#00F0FF', solid: true }));
+        level2.platforms.push(new Platform(1030, 400, 220, 100, { color: '#0A1520', accentColor: '#00F0FF', solid: true }));
+
+        const level2Exit = new Level2Exit();
+
+        const origL2Reset = level2.reset.bind(level2);
+        level2.reset = function() {
+            origL2Reset();
+            level2BridgePlatform.solid = false;
+            level2Exit.reset();
+        };
+
+        const origL2Update = level2.update.bind(level2);
+        level2.update = function() {
+            origL2Update();
+            level2Exit.update(player, level2BridgePlatform);
+        };
+
+        const origL2Draw = level2.draw.bind(level2);
+        level2.draw = function(ctx, camX, camY) {
+            origL2Draw(ctx, camX, camY);
+            level2Exit.draw(ctx, camX, camY);
+        };
+
+        levels.push(level2);
+
+        /* ================= LEVEL 3 ================= */
+        const level3 = new Level(3, 1250, 500, 60, 340);
+        level3.platforms.push(new Platform(0, 400, 1250, 100, { color: '#1F0810', accentColor: '#FF1E56', solid: true }));
+
+        const level3Exit = new Level3Exit();
+
+        const origL3Reset = level3.reset.bind(level3);
+        level3.reset = function() {
+            origL3Reset();
+            level3Exit.reset();
+        };
+
+        const origL3Update = level3.update.bind(level3);
+        level3.update = function() {
+            origL3Update();
+            level3Exit.update(player);
+        };
+
+        const origL3Draw = level3.draw.bind(level3);
+        level3.draw = function(ctx, camX, camY) {
+            origL3Draw(ctx, camX, camY);
+            level3Exit.draw(ctx, camX, camY);
+        };
+
+        levels.push(level3);
+
+        /* ================= LEVEL 4 ================= */
+        const level4 = new Level(4, 1500, 500, 60, 340);
+        level4.platforms.push(new Platform(0, 400, 1500, 100, { color: '#0A1F10', accentColor: '#00FF66', solid: true }));
+        level4.platforms.push(new Platform(140, 340, 70, 12, { color: '#0A1F10', accentColor: '#00FF66', solid: true }));
+
+        const level4Exit = new Level4Exit();
+
+        const origL4Reset = level4.reset.bind(level4);
+        level4.reset = function() {
+            origL4Reset();
+            level4Exit.reset();
+        };
+
+        const origL4Update = level4.update.bind(level4);
+        level4.update = function() {
+            origL4Update();
+            level4Exit.update(player);
+        };
+
+        const origL4Draw = level4.draw.bind(level4);
+        level4.draw = function(ctx, camX, camY) {
+            origL4Draw(ctx, camX, camY);
+            level4Exit.draw(ctx, camX, camY);
+        };
+
+        levels.push(level4);
+
+        /* ================= LEVEL 5 ================= */
+        const level5 = new Level(5, 1750, 500, 60, 340);
+        level5.platforms.push(new Platform(0, 400, 1750, 100, { color: '#201500', accentColor: '#FF9900', solid: true }));
+
+        const level5Exit = new Level5Exit();
+
+        const origL5Reset = level5.reset.bind(level5);
+        level5.reset = function() {
+            origL5Reset();
+            level5Exit.reset();
+        };
+
+        const origL5Update = level5.update.bind(level5);
+        level5.update = function() {
+            origL5Update();
+            level5Exit.update(player);
+        };
+
+        const origL5Draw = level5.draw.bind(level5);
+        level5.draw = function(ctx, camX, camY) {
+            origL5Draw(ctx, camX, camY);
+            level5Exit.draw(ctx, camX, camY);
+        };
+
+        levels.push(level5);
+
+        /* ================= LEVEL 6 ================= */
+        const level6 = new Level(6, 2000, 500, 60, 340);
+        level6.platforms.push(new Platform(0, 400, 2000, 100, { color: '#0B1026', accentColor: '#A855F7', solid: true }));
+
+        const level6Exit = new Level6Exit();
+
+        const origL6Reset = level6.reset.bind(level6);
+        level6.reset = function() {
+            origL6Reset();
+            level6Exit.reset();
+        };
+
+        const origL6Update = level6.update.bind(level6);
+        level6.update = function() {
+            origL6Update();
+            level6Exit.update(player);
+        };
+
+        const origL6Draw = level6.draw.bind(level6);
+        level6.draw = function(ctx, camX, camY) {
+            origL6Draw(ctx, camX, camY);
+            level6Exit.draw(ctx, camX, camY);
+        };
+
+        levels.push(level6);
+
+        function buildLevelGrid() {
+            const grid = document.getElementById('level-grid');
+            grid.innerHTML = '';
+
+            for (let i = 0; i < levels.length; i++) {
+                const levelNum = i + 1;
+                const btn = document.createElement('div');
+                btn.className = 'level-btn';
+                btn.innerText = levelNum < 10 ? `00${levelNum}` : (levelNum < 100 ? `0${levelNum}` : `${levelNum}`);
+
+                const isUnlocked = true; // Testing mode: keep every current level accessible.
+                const isCompleted = saveData.completedLevels.includes(levelNum);
+
+                if (isCompleted) {
+                    btn.classList.add('completed');
+                } else if (isUnlocked) {
+                    btn.classList.add('unlocked');
+                } else {
+                    btn.classList.add('locked');
+                }
+
+                btn.addEventListener('click', () => {
+                    if (isUnlocked) {
+                        startLevel(i);
+                    }
+                });
+
+                grid.appendChild(btn);
+            }
+        }
+
+        function hideAllScreens() {
+            const screens = document.querySelectorAll('.ui-screen');
+            screens.forEach(s => s.classList.remove('active'));
+            document.getElementById('hud').style.display = 'none';
+            document.getElementById('mobile-controls').style.display = 'none';
+            document.getElementById('layout-editor-bar').style.display = 'none';
+        }
+
+        function switchState(newState) {
+            currentState = newState;
+            hideAllScreens();
+
+            if (newState === STATE.BOOT) {
+                document.getElementById('screen-boot').classList.add('active');
+            } else if (newState === STATE.MENU) {
+                document.getElementById('screen-menu').classList.add('active');
+            } else if (newState === STATE.LEVEL_SELECT) {
+                buildLevelGrid();
+                document.getElementById('screen-levels').classList.add('active');
+            } else if (newState === STATE.HOW_TO_PLAY) {
+                document.getElementById('screen-how').classList.add('active');
+            } else if (newState === STATE.SETTINGS) {
+                document.getElementById('screen-settings').classList.add('active');
+            } else if (newState === STATE.CUSTOM_LAYOUT) {
+                document.getElementById('layout-editor-bar').style.display = 'flex';
+                document.getElementById('mobile-controls').style.display = 'block';
+            } else if (newState === STATE.PLAYING) {
+                document.getElementById('hud').style.display = 'flex';
+                document.getElementById('mobile-controls').style.display = 'block';
+            } else if (newState === STATE.PAUSED) {
+                document.getElementById('screen-pause').classList.add('active');
+            } else if (newState === STATE.LEVEL_COMPLETE) {
+                document.getElementById('complete-stats').innerText = `ATTEMPTS: ${levelAttempts}`;
+                document.getElementById('screen-complete').classList.add('active');
+            } else if (newState === STATE.FINAL_REWARD) {
+                document.getElementById('screen-final-reward').classList.add('active');
+            }
+        }
+
+        function startLevel(index) {
+            if (levels.length === 0 || index < 0 || index >= levels.length) return;
+            currentLevelIndex = index;
+            levelAttempts = 1;
+            loadLevelState();
+            switchState(STATE.PLAYING);
+        }
+
+        function loadLevelState() {
+            if (!levels[currentLevelIndex]) return;
+            const lvl = levels[currentLevelIndex];
+            lvl.reset();
+            player.reset(lvl.spawnX, lvl.spawnY);
+            updateHUD();
+        }
+
+        function restartCurrentLevel(fromDeath = false) {
+            if (!fromDeath) levelAttempts++;
+            loadLevelState();
+        }
+
+        function updateHUD() {
+            const num = currentLevelIndex + 1;
+            const formatted = num < 10 ? `00${num}` : (num < 100 ? `0${num}` : `${num}`);
+            document.getElementById('hud-level').innerText = `LEVEL ${formatted}`;
+            document.getElementById('hud-attempts').innerText = `ATTEMPTS: ${levelAttempts}`;
+        }
+
+        function completeCurrentLevel() {
+            audio.playWin();
+            const lvlNum = currentLevelIndex + 1;
+
+            if (!saveData.completedLevels.includes(lvlNum)) {
+                saveData.completedLevels.push(lvlNum);
+            }
+
+            if (saveData.unlockedLevel < lvlNum + 1 && lvlNum < levels.length) {
+                saveData.unlockedLevel = lvlNum + 1;
+            }
+
+            saveProgress();
+
+            const isAbsoluteFinalLevel = (lvlNum === levels.length && levels.length >= 10);
+            if (isAbsoluteFinalLevel) {
+                switchState(STATE.FINAL_REWARD);
+            } else {
+                switchState(STATE.LEVEL_COMPLETE);
+            }
+        }
+
+        document.getElementById('btn-play').addEventListener('click', () => {
+            audio.playClick();
+            if (levels.length > 0) {
+                startLevel(Math.min(saveData.unlockedLevel - 1, levels.length - 1));
+            }
+        });
+
+        document.getElementById('btn-levels').addEventListener('click', () => {
+            audio.playClick();
+            switchState(STATE.LEVEL_SELECT);
+        });
+
+        document.getElementById('btn-how').addEventListener('click', () => {
+            audio.playClick();
+            switchState(STATE.HOW_TO_PLAY);
+        });
+
+        document.getElementById('btn-settings').addEventListener('click', () => {
+            audio.playClick();
+            switchState(STATE.SETTINGS);
+        });
+
+        document.getElementById('btn-levels-back').addEventListener('click', () => {
+            audio.playClick();
+            switchState(STATE.MENU);
+        });
+
+        document.getElementById('btn-how-back').addEventListener('click', () => {
+            audio.playClick();
+            switchState(STATE.MENU);
+        });
+
+        document.getElementById('btn-settings-back').addEventListener('click', () => {
+            audio.playClick();
+            switchState(STATE.MENU);
+        });
+
+        document.getElementById('btn-open-layout').addEventListener('click', () => {
+            audio.playClick();
+            switchState(STATE.CUSTOM_LAYOUT);
+        });
+
+        document.getElementById('btn-layout-save').addEventListener('click', () => {
+            audio.playClick();
+            saveTouchLayout();
+            switchState(STATE.SETTINGS);
+        });
+
+        document.getElementById('btn-layout-reset').addEventListener('click', () => {
+            audio.playClick();
+            touchLayout = {
+                btnLeft: { x: 5, y: 72, size: 58 },
+                btnRight: { x: 16, y: 72, size: 58 },
+                btnJump: { x: 84, y: 70, size: 66 }
+            };
+            saveTouchLayout();
+            applyTouchLayoutDOM();
+        });
+
+        document.getElementById('btn-settings-reset-lvl').addEventListener('click', () => {
+            audio.playClick();
+            restartCurrentLevel();
+            if (levels.length > 0) switchState(STATE.PLAYING);
+        });
+
+        document.getElementById('hud-hint-btn').addEventListener('click', () => {
+            audio.playClick();
+            const levelHints = [
+                'LEVEL 1 HINT\nWhen the door moves away, do not return to its original spot—the trap is left there. Follow the door to its new position on the left.',
+                'LEVEL 2 HINT\nFollow the door as it changes position. Move past the bridge area to activate the bridge. At the final door, press LEFT to lock it in place, then approach it.',
+                'LEVEL 3 HINT\nPause briefly around the first door to trigger the next step. Later, jump after moving past x≈450, press LEFT after x≈660, then stand still on the pressure pad around x≈930 until it activates.',
+                'LEVEL 4 HINT\nUse the raised platform around x≈140–200 and land on it. After moving past x≈440, press LEFT. Then move past x≈700 and land; near x≈1000, trigger the pulse while it is GREEN. The final door follows your movement.',
+                'LEVEL 5 HINT\nJump near x≈180 to make the high door drop. Around x≈400–480, release LEFT/RIGHT and stop completely. Near x≈600–720, press JUMP three times. Later press LEFT past x≈1030, then jump near x≈1200 and reach the jump’s high point. Follow the final door.',
+                'LEVEL 6 HINT\nMove quickly through x≈220 (don’t walk slowly there). Stand still on the ground around x≈380–420. Past x≈680, jump; around x≈950–1040 keep a moderate speed. Jump high near x≈1230–1270, then touch the two ground pads in order: x≈1430–1470, followed by x≈1500–1540. Then reach the final door.'
+            ];
+            const hint = levelHints[currentLevelIndex];
+            if (hint) window.alert(hint);
+        });
+
+        document.getElementById('hud-reset-btn').addEventListener('click', () => {
+            audio.playClick();
+            restartCurrentLevel();
+        });
+
+        document.getElementById('hud-pause-btn').addEventListener('click', () => {
+            audio.playClick();
+            switchState(STATE.PAUSED);
+        });
+
+        document.getElementById('btn-resume').addEventListener('click', () => {
+            audio.playClick();
+            if (levels.length > 0) switchState(STATE.PLAYING);
+        });
+
+        document.getElementById('btn-restart').addEventListener('click', () => {
+            audio.playClick();
+            restartCurrentLevel();
+            if (levels.length > 0) switchState(STATE.PLAYING);
+        });
+
+        document.getElementById('btn-pause-levels').addEventListener('click', () => {
+            audio.playClick();
+            switchState(STATE.LEVEL_SELECT);
+        });
+
+        document.getElementById('btn-pause-menu').addEventListener('click', () => {
+            audio.playClick();
+            switchState(STATE.MENU);
+        });
+
+        document.getElementById('btn-next-level').addEventListener('click', () => {
+            audio.playClick();
+            if (currentLevelIndex + 1 < levels.length) {
+                startLevel(currentLevelIndex + 1);
+            } else {
+                switchState(STATE.LEVEL_SELECT);
+            }
+        });
+
+        document.getElementById('btn-complete-replay').addEventListener('click', () => {
+            audio.playClick();
+            startLevel(currentLevelIndex);
+        });
+
+        document.getElementById('btn-complete-levels').addEventListener('click', () => {
+            audio.playClick();
+            switchState(STATE.LEVEL_SELECT);
+        });
+
+        document.getElementById('btn-victory-replay').addEventListener('click', () => {
+            audio.playClick();
+            if (levels.length > 0) startLevel(0);
+        });
+
+        document.getElementById('btn-victory-levels').addEventListener('click', () => {
+            audio.playClick();
+            switchState(STATE.LEVEL_SELECT);
+        });
+
+        document.getElementById('toggle-sound').addEventListener('click', (e) => {
+            audioEnabled = !audioEnabled;
+            e.target.innerText = audioEnabled ? 'ON' : 'OFF';
+        });
+
+        document.getElementById('toggle-shake').addEventListener('click', (e) => {
+            shakeEnabled = !shakeEnabled;
+            e.target.innerText = shakeEnabled ? 'ON' : 'OFF';
+        });
+
+        document.getElementById('toggle-fullscreen').addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        });
+
+        const camera = { x: 0, y: 0 };
+
+        function updateCamera(level) {
+            if (!level) return;
+            const targetX = player.x - CONFIG.WIDTH / 2 + player.width / 2;
+            const targetY = player.y - CONFIG.HEIGHT / 2 + player.height / 2;
+
+            camera.x += (targetX - camera.x) * 0.1;
+            camera.y += (targetY - camera.y) * 0.1;
+
+            camera.x = Math.max(0, Math.min(level.width - CONFIG.WIDTH, camera.x));
+            camera.y = Math.max(0, Math.min(level.height - CONFIG.HEIGHT, camera.y));
+        }
+
+        let lastTime = performance.now();
+
+        function gameLoop(timestamp) {
+            const dt = Math.min((timestamp - lastTime) / 1000, 0.05);
+            lastTime = timestamp;
+
+            if (currentState === STATE.PLAYING || currentState === STATE.CUSTOM_LAYOUT) {
+                const currentLevel = levels[currentLevelIndex];
+
+                if (currentState === STATE.PLAYING && currentLevel) {
+                    player.update(currentLevel);
+                    currentLevel.update();
+                    updateCamera(currentLevel);
+                }
+
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    particles[i].update();
+                    if (particles[i].life <= 0) particles.splice(i, 1);
+                }
+
+                ctx.save();
+                ctx.clearRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
+
+                if (screenShake > 0) {
+                    const shakeX = (Math.random() - 0.5) * screenShake;
+                    const shakeY = (Math.random() - 0.5) * screenShake;
+                    ctx.translate(shakeX, shakeY);
+                    screenShake *= 0.85;
+                    if (screenShake < 0.2) screenShake = 0;
+                }
+
+                if (currentLevel) {
+                    currentLevel.draw(ctx, camera.x, camera.y);
+                }
+                player.draw(ctx, camera.x, camera.y);
+
+                particles.forEach(p => p.draw(ctx, camera.x, camera.y));
+
+                ctx.restore();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function runBootSequence() {
+            loadProgress();
+            updateCanvasScale();
+            setupCustomLayoutDragSystem();
+
+            const title = document.getElementById('boot-title');
+            const sub = document.getElementById('boot-sub');
+
+            setTimeout(() => { title.style.opacity = '1'; }, 200);
+            setTimeout(() => { sub.style.opacity = '1'; }, 800);
+            setTimeout(() => {
+                switchState(STATE.MENU);
+            }, 2200);
+        }
+
+        window.addEventListener('load', () => {
+            runBootSequence();
+            requestAnimationFrame(gameLoop);
+        });
+    </script>
+</body>
+</html>
